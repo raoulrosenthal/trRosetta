@@ -9,14 +9,20 @@ import tensorflow as tf
 def parse_a3m(filename):
     seqs = []
     table = str.maketrans(dict.fromkeys(string.ascii_lowercase))
-
+    seq = ""
+    full_seq=""
     # read file line by line
     for line in open(filename,"r"):
-        # skip labels
-        if line[0] != '>':
-            # remove lowercase letters and right whitespaces
-            seqs.append(line.rstrip().translate(table))
-
+      if line[0] == '>':
+        seqs.append(full_seq.rstrip("\n").translate(table))
+        seq = ""
+        full_seq=""
+      if line[0] != '>':
+        # remove lowercase letters and right whitespaces
+        full_seq = full_seq + seq
+        seq = line.strip('\n')
+    #remove the first line which is empty
+    seqs = seqs[1:]
     # convert letters into numbers
     alphabet = np.array(list("ARNDCQEGHILKMFPSTWYV-"), dtype='|S1').view(np.uint8)
     msa = np.array([list(s) for s in seqs], dtype='|S1').view(np.uint8)
@@ -27,6 +33,7 @@ def parse_a3m(filename):
     msa[msa > 20] = 20
 
     return msa
+
 
 
 # 1-hot MSA to PSSM
